@@ -1,4 +1,4 @@
-from random import choice, randint
+from random import randint
 import requests as r
 import time
 
@@ -19,7 +19,7 @@ def load_messages():
     for line in lines:
         if line.startswith("User 1: ") or line.startswith("User 2: "):
             messages.append(line.split(": ", 1)[1])
-            
+    
     # Фильтруем сообщения в зависимости от выбора участника
     if participant == 1:
         return messages[::2]  # Берём нечётные (0, 2, 4 → с точки зрения индексации)
@@ -27,6 +27,7 @@ def load_messages():
         return messages[1::2]  # Берём чётные (1, 3, 5)
 
 msg_set = load_messages()
+msg_index = 0  # Индекс текущего сообщения
 total_sent = 0
 last_replied_message_id = None  # Запоминаем последнее обработанное сообщение
 
@@ -50,9 +51,10 @@ while True:
                 if not msg_set:
                     print("Повторная загрузка сообщений...")
                     msg_set = load_messages()
+                    msg_index = 0  # Обнуляем индекс после перезагрузки
 
-                msg = choice(msg_set)
-                msg_set.remove(msg)  # Удаляем отправленное сообщение из списка
+                msg = msg_set[msg_index]  # Берём сообщение по порядку
+                msg_index = (msg_index + 1) % len(msg_set)  # Увеличиваем индекс, зацикливаем если нужно
 
                 print(f'Replying to {target_user_id} with message: {msg}')
                 _data = {
